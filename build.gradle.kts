@@ -1,5 +1,6 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun properties(key: String) = project.findProperty(key).toString()
 
@@ -65,34 +66,34 @@ tasks {
         gradleVersion = properties("gradleVersion")
     }
 
-    patchPluginXml {
-        version.set(properties("pluginVersion"))
-        sinceBuild.set(properties("pluginSinceBuild"))
-        untilBuild.set(properties("pluginUntilBuild"))
-
-        // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
-        pluginDescription.set(
-            file("README.md").readText().lines().run {
-                val start = "<!-- Plugin description -->"
-                val end = "<!-- Plugin description end -->"
-
-                if (!containsAll(listOf(start, end))) {
-                    throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
-                }
-                subList(indexOf(start) + 1, indexOf(end))
-            }.joinToString("\n").let { markdownToHTML(it) }
-        )
-
-        // Get the latest available change notes from the changelog file
-        changeNotes.set(provider {
-            with(changelog) {
-                renderItem(
-                    getOrNull(properties("pluginVersion")) ?: getLatest(),
-                    Changelog.OutputType.HTML,
-                )
-            }
-        })
-    }
+//    patchPluginXml {
+//        version.set(properties("pluginVersion"))
+//        sinceBuild.set(properties("pluginSinceBuild"))
+//        untilBuild.set(properties("pluginUntilBuild"))
+//
+//        // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
+//        pluginDescription.set(
+//            file("README.md").readText().lines().run {
+//                val start = "<!-- Plugin description -->"
+//                val end = "<!-- Plugin description end -->"
+//
+//                if (!containsAll(listOf(start, end))) {
+//                    throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
+//                }
+//                subList(indexOf(start) + 1, indexOf(end))
+//            }.joinToString("\n").let { markdownToHTML(it) }
+//        )
+//
+//        // Get the latest available change notes from the changelog file
+//        changeNotes.set(provider {
+//            with(changelog) {
+//                renderItem(
+//                    getOrNull(properties("pluginVersion")) ?: getLatest(),
+//                    Changelog.OutputType.HTML,
+//                )
+//            }
+//        })
+//    }
 
     // Configure UI tests plugin
     // Read more: https://github.com/JetBrains/intellij-ui-test-robot
@@ -117,4 +118,15 @@ tasks {
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
         channels.set(listOf(properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()))
     }
+}
+dependencies {
+    implementation(kotlin("stdlib-jdk8"))
+}
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    jvmTarget = "11"
+}
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+    jvmTarget = "11"
 }

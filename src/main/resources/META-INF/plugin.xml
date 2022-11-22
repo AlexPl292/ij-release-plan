@@ -1,7 +1,7 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <id>com.github.alexpl292.ijreleaseplan</id>
-    <name>IntelliJ Platform Plugin ij-release-plan</name>
+    <name>ij-release-plan</name>
     <vendor>alexpl292</vendor>
 
     <depends>com.intellij.modules.platform</depends>
@@ -9,6 +9,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.github.alexpl292.ijreleaseplan.services.MyApplicationService"/>
         <projectService serviceImplementation="com.github.alexpl292.ijreleaseplan.services.MyProjectService"/>
+        <statusBarWidgetFactory
+                implementation="com.github.alexpl292.ijreleaseplan.services.PlannerStatusBarWidgetFactory"/>
     </extensions>
 
     <applicationListeners>
