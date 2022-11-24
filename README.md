@@ -17,6 +17,16 @@
 
 <!-- Plugin description -->
 Show planned IJ versions as a widget
+
+You probably don't know this fact, but IJ doesn't now allow you to upload the plugin to the marketplace
+
+if it has a too short description.
+
+Thus, I typed this mess here.
+
+Thank you.
+
+Have a nice day.
 <!-- Plugin description end -->
 
 ---
