@@ -121,6 +121,8 @@ tasks {
 }
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+    // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-datetime
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
 }
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
