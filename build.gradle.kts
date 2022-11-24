@@ -66,11 +66,11 @@ tasks {
         gradleVersion = properties("gradleVersion")
     }
 
-//    patchPluginXml {
-//        version.set(properties("pluginVersion"))
-//        sinceBuild.set(properties("pluginSinceBuild"))
-//        untilBuild.set(properties("pluginUntilBuild"))
-//
+    patchPluginXml {
+        version.set(properties("pluginVersion"))
+        sinceBuild.set(properties("pluginSinceBuild"))
+        untilBuild.set(properties("pluginUntilBuild"))
+
 //        // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
 //        pluginDescription.set(
 //            file("README.md").readText().lines().run {
@@ -93,7 +93,7 @@ tasks {
 //                )
 //            }
 //        })
-//    }
+    }
 
     // Configure UI tests plugin
     // Read more: https://github.com/JetBrains/intellij-ui-test-robot
