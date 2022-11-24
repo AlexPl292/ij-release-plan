@@ -1,4 +1,4 @@
-package com.github.alexpl292.ijreleaseplan
+package org.jetbrains.releaseplan
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls

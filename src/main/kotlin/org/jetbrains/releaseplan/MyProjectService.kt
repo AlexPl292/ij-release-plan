@@ -1,6 +1,5 @@
-package com.github.alexpl292.ijreleaseplan.services
+package org.jetbrains.releaseplan
 
-import com.github.alexpl292.ijreleaseplan.MyBundle
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
@@ -16,18 +15,6 @@ import java.awt.event.MouseEvent
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import javax.swing.Icon
-
-class MyProjectService(project: Project) {
-
-    init {
-        println(MyBundle.message("projectService", project.name))
-    }
-
-    /**
-     * Chosen by fair dice roll, guaranteed to be random.
-     */
-    fun getRandomNumber() = 4
-}
 
 class PlannerStatusBarWidgetFactory : StatusBarWidgetFactory {
     override fun getId(): String = "ij-plan"
