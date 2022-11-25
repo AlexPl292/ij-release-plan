@@ -93,10 +93,14 @@ class ReleaseStructure(
 class MajorVersion(
     val featureFreezeDate: LocalDate?,
     val mainBranchName: String?,
+    val headingVersion: String,
     val releases: List<Release>
 ) {
     fun render(now: LocalDate): List<String> {
-        return releases.flatMap { it.render(now) }
+        val prefix = if (featureFreezeDate != null) {
+            listOf("$mainBranchName branch, feature freeze is active")
+        } else emptyList()
+        return prefix + releases.flatMap { it.render(now) }
     }
 
     fun nearest(now: LocalDate): Step {
@@ -114,7 +118,8 @@ class Release(
         if (steps.isEmpty()) {
             return emptyList()
         }
-        return listOf(version) + steps
+        val brch = branch?.let { " | branch $it" } ?: " | no branch"
+        return listOf(version + brch) + steps
     }
 
     fun nearest(now: LocalDate): Step {
@@ -142,6 +147,7 @@ val release = ReleaseStructure(
         MajorVersion(
             LocalDate.of(2022, 10, 18),
             "223",
+            "2022.3",
             listOf(
                 Release(
                     "2022.3",
