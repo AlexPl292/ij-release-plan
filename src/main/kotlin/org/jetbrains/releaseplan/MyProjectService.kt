@@ -48,26 +48,14 @@ class VimStatusBar : StatusBarWidget, StatusBarWidget.TextPresentation {
 
     override fun getClickConsumer() = Consumer<MouseEvent> {
         val now = LocalDate.now()
-        val structure = info.take(10).filter { it.date.isAfter(now) }.sortedBy { it.date }.groupBy { it.project }.mapValues { it.value.groupBy { it.version } }
-        val items = buildList {
-            structure.forEach { project, projectItems ->
-                this.add(project)
-                projectItems.forEach { version, items ->
-                    this.add(version)
-                    items.forEach { item ->
-                        this.add(" - ${item.releaseType}: ${item.date} (in ${ChronoUnit.DAYS.between(now, item.date)} days)")
-                    }
-                }
-            }
-        }
-        val popup = JBPopupFactory.getInstance().createListPopup(MyPopup(text, items))
+        val popup = JBPopupFactory.getInstance().createListPopup(MyPopup(text, release.render(now)))
         popup.show(RelativePoint(it.component, Point(0, -popup.content.preferredSize.height)))
     }
 
     @PopupTitle
     override fun getText(): String {
         val now = LocalDate.now()
-        return info.filter { it.date.isAfter(now) }.minBy { it.date }.let { "${it.shortName} ${it.releaseType} in ${ChronoUnit.DAYS.between(now, it.date)} days" }
+        return release.nearest(now)
     }
 
     override fun getAlignment(): Float = 0.0F
@@ -87,21 +75,101 @@ private class MyPopup(header: String, items: List<String>) : BaseListPopupStep<S
     }
 }
 
-data class ReleaseItem(
-        val project: String,
-        val shortName: String,
-        val releaseType: String,
-        val date: LocalDate,
-        val version: String,
-)
+class ReleaseStructure(
+    val productName: String,
+    val shortName: String,
+    val releases: List<MajorVersion>,
+) {
+    fun render(now: LocalDate): List<String> {
+        return listOf(productName) + releases.first().render(now)
+    }
 
-val info = listOf(
-        ReleaseItem("IntelliJ IDEA", "IJ", "Beta", LocalDate.of(2022, 11, 1), "2022.3"),
-        ReleaseItem("IntelliJ IDEA", "IJ", "Release", LocalDate.of(2022, 11, 29), "2022.3"),
-        ReleaseItem("IntelliJ IDEA", "IJ", "Preview", LocalDate.of(2022, 12, 6), "2022.3.1"),
-        ReleaseItem("IntelliJ IDEA", "IJ", "RC", LocalDate.of(2022, 12, 13), "2022.3.1"),
-        ReleaseItem("IntelliJ IDEA", "IJ", "Release", LocalDate.of(2022, 12, 20), "2022.3.1"),
-        ReleaseItem("IntelliJ IDEA", "IJ", "Preview", LocalDate.of(2023, 1, 10), "2022.3.2"),
-        ReleaseItem("IntelliJ IDEA", "IJ", "RC", LocalDate.of(2023, 1, 17), "2022.3.2"),
-        ReleaseItem("IntelliJ IDEA", "IJ", "Release", LocalDate.of(2023, 1, 24), "2022.3.2"),
+    fun nearest(now: LocalDate): String {
+        val step = releases.map { it.nearest(now) }.minBy { it.date }
+        return "$shortName ${step.type} in ${ChronoUnit.DAYS.between(now, step.date)} days"
+    }
+}
+
+class MajorVersion(
+    val featureFreezeDate: LocalDate?,
+    val mainBranchName: String?,
+    val releases: List<Release>
+) {
+    fun render(now: LocalDate): List<String> {
+        return releases.flatMap { it.render(now) }
+    }
+
+    fun nearest(now: LocalDate): Step {
+        return releases.map { it.nearest(now) }.minBy { it.date }
+    }
+}
+
+class Release(
+    val version: String,
+    val branch: String?,
+    val steps: List<Step>,
+) {
+    fun render(now: LocalDate): List<String> {
+        val steps = steps.mapNotNull { it.render(now) }
+        if (steps.isEmpty()) {
+            return emptyList()
+        }
+        return listOf(version) + steps
+    }
+
+    fun nearest(now: LocalDate): Step {
+        return steps.filter { it.date.isAfter(now) }.minBy { it.date }
+    }
+}
+
+class Step(
+    val type: String,
+    val date: LocalDate,
+) {
+    fun render(now: LocalDate): String? {
+        val dateDiff = ChronoUnit.DAYS.between(now, date)
+        if (dateDiff < 0) {
+            return null
+        }
+        return " - ${type}: $date (in $dateDiff days)"
+    }
+}
+
+val release = ReleaseStructure(
+    "IntelliJ IDEA",
+    "IJ",
+    listOf(
+        MajorVersion(
+            LocalDate.of(2022, 10, 18),
+            "223",
+            listOf(
+                Release(
+                    "2022.3",
+                    "223.7571",
+                    listOf(
+                        Step("Beta", LocalDate.of(2022, 11, 1)),
+                        Step("Release", LocalDate.of(2022, 11, 29)),
+                    )
+                ),
+                Release(
+                    "2022.3.1",
+                    null,
+                    listOf(
+                        Step("Preview", LocalDate.of(2022, 12, 6)),
+                        Step("RC", LocalDate.of(2022, 12, 13)),
+                        Step("Release", LocalDate.of(2022, 12, 20)),
+                    )
+                ),
+                Release(
+                    "2022.3.2",
+                    null,
+                    listOf(
+                        Step("Preview", LocalDate.of(2023, 1, 10)),
+                        Step("RC", LocalDate.of(2023, 1, 17)),
+                        Step("Release", LocalDate.of(2023, 1, 24)),
+                    )
+                ),
+            )
+        )
+    )
 )
