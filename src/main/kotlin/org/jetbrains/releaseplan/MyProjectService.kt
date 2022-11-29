@@ -24,7 +24,7 @@ class PlannerStatusBarWidgetFactory : StatusBarWidgetFactory {
     override fun isAvailable(project: Project): Boolean = true
 
     override fun createWidget(project: Project): StatusBarWidget {
-        return VimStatusBar()
+        return PlanStatusBar()
     }
 
     override fun disposeWidget(widget: StatusBarWidget) {
@@ -33,7 +33,7 @@ class PlannerStatusBarWidgetFactory : StatusBarWidgetFactory {
     override fun canBeEnabledOn(statusBar: StatusBar): Boolean = true
 }
 
-class VimStatusBar : StatusBarWidget, StatusBarWidget.TextPresentation {
+class PlanStatusBar : StatusBarWidget, StatusBarWidget.TextPresentation {
     override fun dispose() {
     }
 
@@ -85,8 +85,12 @@ class ReleaseStructure(
     }
 
     fun nearest(now: LocalDate): String {
-        val step = releases.map { it.nearest(now) }.minBy { it.date }
-        return "$shortName ${step.type} in ${ChronoUnit.DAYS.between(now, step.date)} days"
+        val step = releases.mapNotNull { it.nearest(now) }.minByOrNull { it.date }
+        return if (step != null) {
+            "$shortName ${step.type} in ${ChronoUnit.DAYS.between(now, step.date)} days"
+        } else {
+            "No near releases"
+        }
     }
 }
 
@@ -103,8 +107,8 @@ class MajorVersion(
         return prefix + releases.flatMap { it.render(now) }
     }
 
-    fun nearest(now: LocalDate): Step {
-        return releases.map { it.nearest(now) }.minBy { it.date }
+    fun nearest(now: LocalDate): Step? {
+        return releases.mapNotNull { it.nearest(now) }.minByOrNull { it.date }
     }
 }
 
@@ -122,8 +126,8 @@ class Release(
         return listOf(version + brch) + steps
     }
 
-    fun nearest(now: LocalDate): Step {
-        return steps.filter { it.date.isAfter(now) }.minBy { it.date }
+    fun nearest(now: LocalDate): Step? {
+        return steps.filter { it.date.isAfter(now) }.minByOrNull { it.date }
     }
 }
 
